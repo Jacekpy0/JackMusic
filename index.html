@@ -13,7 +13,7 @@
     <script>
         // Funkcja ładująca dane z pliku JSON na GitHubie
         async function loadMusic() {
-            const response = await fetch('https://raw.githubusercontent.com/TwojeUsername/TwójRepozytorium/main/music.json');
+            const response = await fetch('music.json');
             const musicData = await response.json();
             displayMusicList(musicData);
         }
