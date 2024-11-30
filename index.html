@@ -7,163 +7,78 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        h1 {
             text-align: center;
-            padding: 20px;
-            background-color: #0078d7;
-            color: white;
-            margin: 0;
         }
-
-        #app-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .song {
+            margin: 10px 0;
         }
-
-        #music-list div, #playlist-songs div {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        button {
-            padding: 5px 10px;
-            font-size: 14px;
-            background-color: #0078d7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #005a9e;
+        #loginForm {
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <h1>JackMusic</h1>
-    <div id="app-container">
-        <div id="user-profile">
-            <h2>Witaj, <span id="username">Anonim</span></h2>
-            <button onclick="logout()">Wyloguj się</button>
-        </div>
-        <div id="playlist">
-            <h2>Twoja playlista</h2>
-            <div id="playlist-songs"></div>
-        </div>
-        <div id="music-list">
-            <h2>Dostępne utwory</h2>
-        </div>
-        <audio id="audio-player" controls></audio>
+
+    <!-- Formularz logowania -->
+    <div id="loginForm">
+        <input type="text" id="username" placeholder="Nazwa użytkownika" required>
+        <input type="password" id="password" placeholder="Hasło" required>
+        <button onclick="login()">Zaloguj się</button>
     </div>
+
+    <!-- Lista utworów -->
+    <div id="music-list" style="display: none;">
+        <h2>Lista utworów</h2>
+    </div>
+
+    <!-- Odtwarzacz audio -->
+    <audio id="audio-player" controls></audio>
 
     <script>
         let currentUser = null;
-        let musicList = [];
 
-        // Funkcja ładująca dane użytkownika
-        async function loadUserData(username) {
-            const response = await fetch('users.json');
-            const users = await response.json();
-            currentUser = users.find(user => user.username === username);
-            if (!currentUser) {
-                alert("Nie znaleziono użytkownika.");
-                return;
+        // Funkcja logowania użytkownika
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const users = await loadUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                alert('Zalogowano pomyślnie!');
+                document.getElementById('loginForm').style.display = 'none';  // Ukryj formularz logowania
+                loadMusic();  // Załaduj utwory po zalogowaniu
+            } else {
+                alert('Błędna nazwa użytkownika lub hasło.');
             }
-            document.getElementById('username').textContent = currentUser.username;
-            loadPlaylist();
-            loadMusic();
         }
 
-        // Funkcja ładująca playlistę użytkownika
-        async function loadPlaylist() {
-            const response = await fetch('playlists.json');
-            const playlists = await response.json();
-            const userPlaylist = playlists.find(playlist => playlist.owner === currentUser.username);
-            displayPlaylist(userPlaylist ? userPlaylist.songs : []);
+        // Funkcja ładująca użytkowników z pliku JSON
+        async function loadUsers() {
+            const response = await fetch('users.json');
+            return await response.json();
         }
 
-        // Funkcja wyświetlająca playlistę
-        function displayPlaylist(playlistSongs) {
-            const playlistElement = document.getElementById('playlist-songs');
-            playlistElement.innerHTML = '';
-            playlistSongs.forEach(songTitle => {
-                const song = musicList.find(m => m.title === songTitle);
-                if (song) {
-                    const songElement = document.createElement('div');
-                    songElement.innerHTML = `
-                        <strong>${song.title}</strong> - ${song.artist}
-                        <button onclick="playMusic('${song.file}')">Odtwórz</button>`;
-                    playlistElement.appendChild(songElement);
-                }
-            });
-            currentUser.playlist = playlistSongs;
-        }
-
-        // Funkcja ładująca dostępne utwory
+        // Funkcja ładująca utwory z pliku JSON
         async function loadMusic() {
             const response = await fetch('music.json');
-            musicList = await response.json();
-            displayMusicList(musicList);
+            const musicData = await response.json();
+            displayMusicList(musicData);
         }
 
-        // Funkcja wyświetlająca listę dostępnych utworów
-        function displayMusicList(music) {
+        // Funkcja wyświetlająca listę utworów
+        function displayMusicList(musicData) {
             const musicListElement = document.getElementById('music-list');
-            musicListElement.innerHTML = '';
-            music.forEach(song => {
+            musicListElement.style.display = 'block';  // Pokaż listę utworów
+            musicData.forEach(song => {
                 const songElement = document.createElement('div');
-                songElement.innerHTML = `
-                    <strong>${song.title}</strong> - ${song.artist}
-                    <button onclick="addToPlaylist('${song.title}')">Dodaj do playlisty</button>`;
+                songElement.classList.add('song');
+                songElement.innerHTML = `<strong>${song.title}</strong>
+                    <button onclick="playMusic('${song.file}')">Odtwórz</button>`;
                 musicListElement.appendChild(songElement);
-            });
-        }
-
-        // Funkcja dodająca utwór do playlisty
-        async function addToPlaylist(songTitle) {
-            if (!currentUser.playlist) {
-                currentUser.playlist = [];
-            }
-            if (currentUser.playlist.includes(songTitle)) {
-                alert("Ten utwór jest już na twojej playliście!");
-                return;
-            }
-            currentUser.playlist.push(songTitle);
-            displayPlaylist(currentUser.playlist);
-
-            // Zapisanie zmian do playlists.json
-            const response = await fetch('playlists.json');
-            const playlists = await response.json();
-            const existingPlaylist = playlists.find(playlist => playlist.owner === currentUser.username);
-            if (existingPlaylist) {
-                existingPlaylist.songs = currentUser.playlist;
-            } else {
-                playlists.push({ owner: currentUser.username, songs: currentUser.playlist });
-            }
-            await savePlaylists(playlists);
-        }
-
-        // Funkcja zapisująca zmiany w playlists.json
-        async function savePlaylists(playlists) {
-            await fetch('save-playlists.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(playlists)
             });
         }
 
@@ -173,17 +88,6 @@
             player.src = songFile;
             player.play();
         }
-
-        // Funkcja wylogowania
-        function logout() {
-            currentUser = null;
-            document.getElementById('username').textContent = "Anonim";
-            document.getElementById('playlist-songs').innerHTML = '';
-            document.getElementById('music-list').innerHTML = '';
-        }
-
-        // Ładowanie danych użytkownika
-        loadUserData('testuser');
     </script>
 </body>
 </html>
