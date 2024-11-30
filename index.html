@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JackMusic</title>
     <style>
+        /* Podstawowy styl */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f3f4f6;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
             height: 100vh;
             color: #333;
+            padding-bottom: 80px; /* Dodatkowa przestrzeń na pasek odtwarzania */
         }
 
         h1 {
@@ -23,10 +26,13 @@
             margin-bottom: 20px;
         }
 
+        /* Lista utworów */
         #music-list {
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .song {
@@ -64,26 +70,49 @@
             outline: none;
         }
 
+        /* Pasek odtwarzania */
         #audio-player {
-            margin-top: 20px;
             width: 100%;
             max-width: 800px;
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333;
+            color: white;
+            font-size: 16px;
         }
 
-        .audio-container {
+        /* Styl niestandardowego paska audio */
+        #audio-player audio {
+            width: 80%;
+            margin-right: 10px;
+        }
+
+        #audio-player .controls {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
         }
 
-        .audio-container audio {
-            margin-top: 10px;
-            width: 100%;
+        #audio-player button {
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        #audio-player button:hover {
+            color: #4CAF50;
         }
 
         /* Baner zgody na ciasteczka */
@@ -131,7 +160,12 @@
             }
 
             #audio-player {
-                width: 90%;
+                width: 100%;
+                font-size: 14px;
+            }
+
+            #audio-player audio {
+                width: 70%;
             }
         }
     </style>
@@ -140,12 +174,21 @@
     <div class="audio-container">
         <h1>JackMusic</h1>
         <div id="music-list"></div>
-        <audio id="audio-player" controls></audio>
+    </div>
+
+    <!-- Pasek odtwarzania -->
+    <div id="audio-player">
+        <audio id="audio-player-element" controls></audio>
+        <div class="controls">
+            <button id="prev-btn">&#9664;</button>
+            <button id="play-btn">&#9654;</button>
+            <button id="next-btn">&#9654;&#9654;</button>
+        </div>
     </div>
 
     <!-- Baner zgody na ciasteczka -->
     <div id="cookie-banner">
-        <p>Lubisz ciastka, my też, więc aby poprawić jakość kożystania z serwisu kliknij "Akceptuję".</p>
+        <p>Nasza strona używa ciasteczek, aby poprawić jakość korzystania z serwisu. Kliknij „Akceptuję”, aby zaakceptować nasze zasady.</p>
         <button onclick="acceptCookies()">Akceptuję</button>
     </div>
 
@@ -171,66 +214,46 @@
             });
         }
 
-        // Funkcja odtwarzająca utwór
-        function playMusic(songFile) {
-            const player = document.getElementById('audio-player');
-            player.src = songFile;
-            player.play();
-            // Zapamiętanie ostatnio odtwarzanego utworu w ciasteczkach
-            setCookie('lastPlayed', songFile, 7); // Przechowujemy przez 7 dni
+        // Funkcja odtwarzająca muzykę
+        function playMusic(file) {
+            const audioPlayerElement = document.getElementById('audio-player-element');
+            audioPlayerElement.src = file;
+            audioPlayerElement.play();
         }
 
-        // Funkcja ustawiająca ciasteczko
-        function setCookie(name, value, days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            const expires = "expires=" + date.toUTCString();
-            document.cookie = name + "=" + value + ";" + expires + ";path=/";
-        }
-
-        // Funkcja odczytująca ciasteczko
-        function getCookie(name) {
-            const decodedCookies = decodeURIComponent(document.cookie);
-            const cookiesArray = decodedCookies.split(';');
-            for (let i = 0; i < cookiesArray.length; i++) {
-                let cookie = cookiesArray[i];
-                while (cookie.charAt(0) === ' ') {
-                    cookie = cookie.substring(1);
-                }
-                if (cookie.indexOf(name) === 0) {
-                    return cookie.substring(name.length + 1, cookie.length);
-                }
+        // Funkcja obsługująca przyciski na pasku odtwarzania
+        document.getElementById('play-btn').addEventListener('click', () => {
+            const audioPlayerElement = document.getElementById('audio-player-element');
+            if (audioPlayerElement.paused) {
+                audioPlayerElement.play();
+                document.getElementById('play-btn').textContent = '⏸️';
+            } else {
+                audioPlayerElement.pause();
+                document.getElementById('play-btn').textContent = '▶️';
             }
-            return "";
-        }
+        });
 
-        // Funkcja do zaakceptowania ciasteczek
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            // Logika dla przycisku poprzedniego utworu
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            // Logika dla przycisku następnego utworu
+        });
+
+        // Funkcja akceptująca ciasteczka
         function acceptCookies() {
-            setCookie('cookiesAccepted', 'true', 30); // Ustawiamy ciasteczko, aby zapisać zgodę na 30 dni
-            document.getElementById('cookie-banner').style.display = 'none'; // Ukrywamy baner
+            document.getElementById('cookie-banner').style.display = 'none';
+            localStorage.setItem('cookiesAccepted', 'true');
         }
 
-        // Sprawdzanie, czy użytkownik zaakceptował ciasteczka
-        function checkCookies() {
-            const cookiesAccepted = getCookie('cookiesAccepted');
-            if (cookiesAccepted !== 'true') {
-                document.getElementById('cookie-banner').style.display = 'block'; // Pokazujemy baner, jeśli nie zaakceptowano
-            }
+        // Sprawdzanie czy użytkownik zaakceptował ciasteczka
+        if (!localStorage.getItem('cookiesAccepted')) {
+            document.getElementById('cookie-banner').style.display = 'block';
         }
 
-        // Załaduj muzykę po załadowaniu strony
+        // Załadowanie danych o muzyce po załadowaniu strony
         loadMusic();
-
-        // Jeśli jest ciasteczko z ostatnio odtwarzanym utworem, odtwórz go automatycznie
-        window.onload = function() {
-            checkCookies(); // Sprawdzenie zgody na ciasteczka
-            const lastPlayedSong = getCookie('lastPlayed');
-            if (lastPlayedSong) {
-                const player = document.getElementById('audio-player');
-                player.src = lastPlayedSong;
-                player.play();
-            }
-        }
     </script>
 </body>
 </html>
