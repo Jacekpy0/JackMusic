@@ -5,9 +5,14 @@ let musicData = [];
 
 // Funkcja ładująca dane z pliku JSON
 async function loadMusic() {
-    const response = await fetch('music.json'); // Plik JSON z danymi utworów
-    musicData = await response.json();
-    displayMusicList(musicData);
+    try {
+        const response = await fetch('music.json'); // Plik JSON z danymi utworów
+        if (!response.ok) throw new Error('Nie udało się załadować listy muzyki.');
+        musicData = await response.json();
+        displayMusicList(musicData);
+    } catch (error) {
+        console.error(error.message);
+    }
 }
 
 // Wyświetla listę muzyki
@@ -19,7 +24,7 @@ function displayMusicList(musicData) {
         songElement.classList.add('song');
         songElement.innerHTML = `
             <div><strong>${song.title}</strong> - ${song.artist}</div>
-            <button onclick="playMusic(${index})">Odtwórz</button>
+            <button onclick="playMusic(${index})"><i class="fas fa-play"></i></button>
         `;
         musicListElement.appendChild(songElement);
     });
@@ -32,7 +37,7 @@ function playMusic(index) {
     audioElement.src = song.file;
     audioElement.play();
     isPlaying = true;
-    document.getElementById('play-btn').innerHTML = '⏸️';
+    document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>';
 }
 
 // Pauza/odtwarzanie
@@ -40,11 +45,11 @@ function togglePlayPause() {
     if (isPlaying) {
         audioElement.pause();
         isPlaying = false;
-        document.getElementById('play-btn').innerHTML = '▶️';
+        document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>';
     } else {
         audioElement.play();
         isPlaying = true;
-        document.getElementById('play-btn').innerHTML = '⏸️';
+        document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>';
     }
 }
 
@@ -84,3 +89,4 @@ function seek(event) {
 window.onload = function () {
     loadMusic();
 };
+
