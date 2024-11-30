@@ -86,6 +86,34 @@
             width: 100%;
         }
 
+        /* Baner zgody na ciasteczka */
+        #cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        #cookie-banner button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #cookie-banner button:hover {
+            background-color: #45a049;
+        }
+
         /* Responsywność */
         @media (max-width: 768px) {
             h1 {
@@ -113,6 +141,12 @@
         <h1>JackMusic</h1>
         <div id="music-list"></div>
         <audio id="audio-player" controls></audio>
+    </div>
+
+    <!-- Baner zgody na ciasteczka -->
+    <div id="cookie-banner">
+        <p>Lubisz ciastka, my też, więc aby poprawić jakość kożystania z serwisu kliknij "Akceptuję".</p>
+        <button onclick="acceptCookies()">Akceptuję</button>
     </div>
 
     <script>
@@ -170,11 +204,26 @@
             return "";
         }
 
+        // Funkcja do zaakceptowania ciasteczek
+        function acceptCookies() {
+            setCookie('cookiesAccepted', 'true', 30); // Ustawiamy ciasteczko, aby zapisać zgodę na 30 dni
+            document.getElementById('cookie-banner').style.display = 'none'; // Ukrywamy baner
+        }
+
+        // Sprawdzanie, czy użytkownik zaakceptował ciasteczka
+        function checkCookies() {
+            const cookiesAccepted = getCookie('cookiesAccepted');
+            if (cookiesAccepted !== 'true') {
+                document.getElementById('cookie-banner').style.display = 'block'; // Pokazujemy baner, jeśli nie zaakceptowano
+            }
+        }
+
         // Załaduj muzykę po załadowaniu strony
         loadMusic();
 
         // Jeśli jest ciasteczko z ostatnio odtwarzanym utworem, odtwórz go automatycznie
         window.onload = function() {
+            checkCookies(); // Sprawdzenie zgody na ciasteczka
             const lastPlayedSong = getCookie('lastPlayed');
             if (lastPlayedSong) {
                 const player = document.getElementById('audio-player');
