@@ -6,62 +6,114 @@
     <title>JackMusic</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f4f6;
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
-        }
-
-        h1 {
             color: #333;
         }
 
+        h1 {
+            font-size: 36px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
         #music-list {
-            margin-top: 20px;
-            width: 80%;
-            max-width: 600px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .song {
-            background-color: #fff;
+            background-color: #ffffff;
             padding: 15px;
             margin: 10px 0;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .song:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
         }
 
         .song button {
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         .song button:hover {
             background-color: #45a049;
         }
 
-        audio {
+        .song button:focus {
+            outline: none;
+        }
+
+        #audio-player {
             margin-top: 20px;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .audio-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .audio-container audio {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .song {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .song button {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            #audio-player {
+                width: 90%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>JackMusic</h1>
-    <div id="music-list"></div>
-    <audio id="audio-player" controls></audio>
+    <div class="audio-container">
+        <h1>JackMusic</h1>
+        <div id="music-list"></div>
+        <audio id="audio-player" controls></audio>
+    </div>
 
     <script>
         // Funkcja ładująca dane z pliku JSON na GitHubie lub lokalnie
