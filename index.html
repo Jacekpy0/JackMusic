@@ -21,28 +21,27 @@
             margin: 0;
         }
 
-        #music-list {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 10px;
+        #login-container, #register-container {
+            max-width: 300px;
+            margin: 50px auto;
+            padding: 20px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        #music-list div {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #login-container input, #register-container input {
             padding: 10px;
-            border-bottom: 1px solid #ddd;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
 
-        #music-list div:last-child {
-            border-bottom: none;
-        }
-
-        button {
+        #login-container button, #register-container button {
+            width: 100%;
             background-color: #0078d7;
             color: white;
             border: none;
@@ -52,34 +51,112 @@
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
+        #login-container button:hover, #register-container button:hover {
             background-color: #005a9e;
         }
 
-        #audio-player {
-            display: block;
-            margin: 20px auto;
-            width: 100%;
-            max-width: 600px;
+        #app-container {
+            display: none;
         }
     </style>
 </head>
 <body>
     <h1>JackMusic</h1>
-    <div id="music-list"></div>
-    <audio id="audio-player" controls></audio>
+    <div id="login-container">
+        <h2>Logowanie</h2>
+        <input type="text" id="login-username" placeholder="Nazwa użytkownika" required>
+        <input type="password" id="login-password" placeholder="Hasło" required>
+        <button type="button" onclick="login()">Zaloguj się</button>
+        <button type="button" onclick="showRegister()">Zarejestruj się</button>
+    </div>
+
+    <div id="register-container" style="display: none;">
+        <h2>Rejestracja</h2>
+        <input type="text" id="register-username" placeholder="Nazwa użytkownika" required>
+        <input type="password" id="register-password" placeholder="Hasło" required>
+        <button type="button" onclick="register()">Zarejestruj się</button>
+        <button type="button" onclick="showLogin()">Powrót do logowania</button>
+    </div>
+
+    <div id="app-container">
+        <div id="music-list"></div>
+        <audio id="audio-player" controls></audio>
+    </div>
 
     <script>
-        // Funkcja ładująca dane z pliku JSON na GitHubie
+        // Wczytaj użytkowników z pliku JSON
+        let users = [];
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('users.json');
+                users = await response.json();
+            } catch (error) {
+                users = []; // Jeśli plik nie istnieje, zacznij od pustej listy
+            }
+        }
+
+        // Funkcja zapisu użytkowników do pliku (symulacja)
+        async function saveUsers() {
+            // W rzeczywistej aplikacji trzeba to zrobić na serwerze
+            console.log("Zapisano użytkowników:", JSON.stringify(users, null, 2));
+        }
+
+        // Logowanie
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const user = users.find(user => user.username === username && user.password === password);
+            if (user) {
+                alert('Zalogowano pomyślnie!');
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                loadMusic();
+            } else {
+                alert('Nieprawidłowa nazwa użytkownika lub hasło!');
+            }
+        }
+
+        // Rejestracja
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (users.find(user => user.username === username)) {
+                alert('Nazwa użytkownika jest zajęta!');
+                return;
+            }
+
+            users.push({ username, password });
+            saveUsers();
+            alert('Rejestracja zakończona pomyślnie!');
+            showLogin();
+        }
+
+        // Pokaż ekran rejestracji
+        function showRegister() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        }
+
+        // Pokaż ekran logowania
+        function showLogin() {
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        }
+
+        // Funkcja ładująca muzykę
         async function loadMusic() {
             const response = await fetch('music.json');
             const musicData = await response.json();
             displayMusicList(musicData);
         }
 
-        // Funkcja wyświetlająca listę muzyki
+        // Wyświetl listę muzyki
         function displayMusicList(musicData) {
             const musicListElement = document.getElementById('music-list');
+            musicListElement.innerHTML = '';
             musicData.forEach(song => {
                 const songElement = document.createElement('div');
                 songElement.innerHTML = `<strong>${song.title}</strong> - ${song.artist}
@@ -88,15 +165,15 @@
             });
         }
 
-        // Funkcja odtwarzająca utwór
+        // Odtwarzaj muzykę
         function playMusic(songFile) {
             const player = document.getElementById('audio-player');
             player.src = songFile;
             player.play();
         }
 
-        // Załaduj muzykę po załadowaniu strony
-        loadMusic();
+        // Załaduj użytkowników przy starcie
+        loadUsers();
     </script>
 </body>
 </html>
