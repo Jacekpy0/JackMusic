@@ -37,6 +37,7 @@ function playMusic(index) {
     audioElement.src = song.file;
     audioElement.play();
     isPlaying = true;
+    updatePlayerUI(song);
     document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>';
 }
 
@@ -65,6 +66,12 @@ function prevSong() {
     playMusic(currentSongIndex);
 }
 
+// Aktualizacja paska odtwarzacza
+function updatePlayerUI(song) {
+    document.getElementById('current-title').textContent = song.title;
+    document.getElementById('current-artist').textContent = ` - ${song.artist}`;
+}
+
 // Aktualizacja paska postępu
 audioElement.ontimeupdate = function () {
     const progress = (audioElement.currentTime / audioElement.duration) * 100;
@@ -73,7 +80,7 @@ audioElement.ontimeupdate = function () {
     const currentSeconds = Math.floor(audioElement.currentTime % 60);
     const durationMinutes = Math.floor(audioElement.duration / 60);
     const durationSeconds = Math.floor(audioElement.duration % 60);
-    document.getElementById('audio-time').textContent = 
+    document.getElementById('audio-time').textContent =
         `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')} / ${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
 };
 
@@ -89,4 +96,3 @@ function seek(event) {
 window.onload = function () {
     loadMusic();
 };
-
