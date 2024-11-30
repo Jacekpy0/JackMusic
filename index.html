@@ -69,49 +69,73 @@
             outline: none;
         }
 
-        /* Pasek odtwarzania */
+        /* Niestandardowy pasek odtwarzania */
         #audio-player {
             width: 100%;
             max-width: 800px;
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 10px;
+            padding: 20px;
             position: fixed;
             bottom: 0;
             left: 0;
             z-index: 10;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             background-color: #333;
             color: white;
-            font-size: 16px;
         }
 
-        /* Styl niestandardowego paska audio */
-        #audio-player audio {
-            width: 80%;
-            margin-right: 10px;
-        }
-
-        #audio-player .controls {
+        /* Kontener paska */
+        #audio-player .player-controls {
             display: flex;
+            justify-content: center;
             align-items: center;
+            width: 100%;
+            margin-top: 10px;
         }
 
+        /* Przyciski odtwarzania */
         #audio-player button {
             background-color: transparent;
             border: none;
             color: white;
             font-size: 24px;
-            margin-left: 10px;
+            margin: 0 10px;
             cursor: pointer;
             transition: color 0.3s ease;
         }
 
         #audio-player button:hover {
             color: #4CAF50;
+        }
+
+        /* Niestandardowy pasek postępu */
+        #progress-bar-container {
+            width: 80%;
+            height: 8px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            border-radius: 5px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #audio-time {
+            margin-top: 5px;
+            font-size: 14px;
         }
 
         /* Baner zgody na ciasteczka */
@@ -180,79 +204,94 @@
         <h1>JackMusic</h1>
         <div id="music-list"></div>
     </div>
+<script>
+        let audioElement = new Audio();
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let musicData = []; // Przechowuje dane utworów
 
-    <!-- Pasek odtwarzania -->
-    <div id="audio-player">
-        <audio id="audio-player-element" controls></audio>
-        <div class="controls">
-            <button id="prev-btn">&#9664;</button>
-            <button id="play-btn">&#9654;</button>
-            <button id="next-btn">&#9654;&#9654;</button>
-        </div>
-    </div>
-
-    <script>
         // Funkcja ładująca dane z pliku JSON na GitHubie lub lokalnie
         async function loadMusic() {
             const response = await fetch('music.json');
-            const musicData = await response.json();
+            musicData = await response.json();
             displayMusicList(musicData);
         }
 
         // Funkcja wyświetlająca listę muzyki
         function displayMusicList(musicData) {
             const musicListElement = document.getElementById('music-list');
-            musicData.forEach(song => {
+            musicData.forEach((song, index) => {
                 const songElement = document.createElement('div');
                 songElement.classList.add('song');
                 songElement.innerHTML = `
                     <div><strong>${song.title}</strong> - ${song.artist}</div>
-                    <button onclick="playMusic('${song.file}')">Odtwórz</button>
+                    <button onclick="playMusic(${index})">Odtwórz</button>
                 `;
                 musicListElement.appendChild(songElement);
             });
         }
 
         // Funkcja odtwarzająca muzykę
-        function playMusic(file) {
-            const audioPlayerElement = document.getElementById('audio-player-element');
-            audioPlayerElement.src = file;
-            audioPlayerElement.play();
+        function playMusic(index) {
+            const song = musicData[index];
+            currentSongIndex = index;
+            audioElement.src = song.file;
+            audioElement.play();
+            isPlaying = true;
+            document.getElementById('play-btn').innerHTML = '⏸️';
         }
 
-        // Funkcja obsługująca przyciski na pasku odtwarzania
-        document.getElementById('play-btn').addEventListener('click', () => {
-            const audioPlayerElement = document.getElementById('audio-player-element');
-            if (audioPlayerElement.paused) {
-                audioPlayerElement.play();
-                document.getElementById('play-btn').textContent = '⏸️';
+        // Funkcja pauzująca muzykę
+        function togglePlayPause() {
+            if (isPlaying) {
+                audioElement.pause();
+                isPlaying = false;
+                document.getElementById('play-btn').innerHTML = '▶️';
             } else {
-                audioPlayerElement.pause();
-                document.getElementById('play-btn').textContent = '▶️';
+                audioElement.play();
+                isPlaying = true;
+                document.getElementById('play-btn').innerHTML = '⏸️';
             }
-        });
+        }
 
-        document.getElementById('prev-btn').addEventListener('click', () => {
-            // Logika dla przycisku poprzedniego utworu
-        });
+        // Funkcja zmiany piosenki
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % musicData.length;
+            playMusic(currentSongIndex);
+        }
 
-        document.getElementById('next-btn').addEventListener('click', () => {
-            // Logika dla przycisku następnego utworu
-        });
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + musicData.length) % musicData.length;
+            playMusic(currentSongIndex);
+        }
+
+        // Funkcja zmieniająca czas odtwarzania na pasku
+        audioElement.ontimeupdate = function() {
+            const progress = (audioElement.currentTime / audioElement.duration) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            const currentMinutes = Math.floor(audioElement.currentTime / 60);
+            const currentSeconds = Math.floor(audioElement.currentTime % 60);
+            const durationMinutes = Math.floor(audioElement.duration / 60);
+            const durationSeconds = Math.floor(audioElement.duration % 60);
+            document.getElementById('audio-time').textContent = `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')} / ${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+        };
+
+        // Funkcja zmieniająca czas paska postępu
+        function seek(event) {
+            const barWidth = event.currentTarget.offsetWidth;
+            const clickPosition = event.offsetX;
+            const duration = audioElement.duration;
+            audioElement.currentTime = (clickPosition / barWidth) * duration;
+        }
 
         // Funkcja akceptująca ciasteczka
         function acceptCookies() {
             document.getElementById('cookie-banner').style.display = 'none';
-            localStorage.setItem('cookiesAccepted', 'true');
         }
 
-        // Sprawdzanie czy użytkownik zaakceptował ciasteczka
-        if (!localStorage.getItem('cookiesAccepted')) {
-            document.getElementById('cookie-banner').style.display = 'block';
-        }
-
-        // Załadowanie danych o muzyce po załadowaniu strony
-        loadMusic();
-    </script>
-</body>
+        // Ładowanie muzyki po załadowaniu strony
+        window.onload = function() {
+            loadMusic();
+        };
+</script>
 </html>
