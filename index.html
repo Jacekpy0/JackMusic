@@ -7,24 +7,22 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="music-list-container">
+        <h1>Lista utworów</h1>
+        <div id="music-list"></div>
+    </div>
+
+    <!-- Pasek odtwarzacza -->
     <div id="audio-player">
-        <!-- Pasek postępu -->
         <div id="progress-container" onclick="seek(event)">
             <div id="progress-bar"></div>
         </div>
-        <div id="audio-time">0:00 / 0:00</div>
-        
-        <!-- Przycisk odtwarzania/pauzy -->
-        <button id="play-btn" onclick="togglePlayPause()">▶️</button>
-        
-        <!-- Przycisk poprzedniego utworu -->
-        <button onclick="prevSong()">⏮️</button>
-        
-        <!-- Przycisk następnego utworu -->
-        <button onclick="nextSong()">⏭️</button>
-        
-        <!-- Lista utworów -->
-        <div id="music-list"></div>
+        <div id="audio-controls">
+            <button id="prev-btn" onclick="prevSong()">⏮️</button>
+            <button id="play-btn" onclick="togglePlayPause()">▶️</button>
+            <button id="next-btn" onclick="nextSong()">⏭️</button>
+            <div id="audio-time">0:00 / 0:00</div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
