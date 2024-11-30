@@ -7,25 +7,78 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
             text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-container {
+            margin-top: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: auto;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #music-list {
+            margin-top: 30px;
         }
         .song {
             margin: 10px 0;
         }
-        #loginForm {
-            margin-bottom: 20px;
+        .message {
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+
     <h1>JackMusic</h1>
 
     <!-- Formularz logowania -->
-    <div id="loginForm">
+    <div id="loginForm" class="form-container">
+        <h3>Logowanie</h3>
         <input type="text" id="username" placeholder="Nazwa użytkownika" required>
         <input type="password" id="password" placeholder="Hasło" required>
         <button onclick="login()">Zaloguj się</button>
+        <p>Nie masz konta? <a href="javascript:void(0)" onclick="showRegistrationForm()">Zarejestruj się</a></p>
     </div>
+
+    <!-- Formularz rejestracji -->
+    <div id="registrationForm" class="form-container" style="display: none;">
+        <h3>Rejestracja</h3>
+        <input type="text" id="newUsername" placeholder="Nazwa użytkownika" required>
+        <input type="password" id="newPassword" placeholder="Hasło" required>
+        <button onclick="register()">Zarejestruj się</button>
+        <p>Masz już konto? <a href="javascript:void(0)" onclick="showLoginForm()">Zaloguj się</a></p>
+    </div>
+
+    <!-- Komunikat o błędach -->
+    <div id="errorMessage" class="message" style="display: none;"></div>
 
     <!-- Lista utworów -->
     <div id="music-list" style="display: none;">
@@ -49,17 +102,51 @@
             if (user) {
                 currentUser = user;
                 alert('Zalogowano pomyślnie!');
-                document.getElementById('loginForm').style.display = 'none';  // Ukryj formularz logowania
-                loadMusic();  // Załaduj utwory po zalogowaniu
+                document.getElementById('loginForm').style.display = 'none'; // Ukryj formularz logowania
+                document.getElementById('errorMessage').style.display = 'none'; // Ukryj błąd
+                loadMusic(); // Załaduj utwory po zalogowaniu
             } else {
-                alert('Błędna nazwa użytkownika lub hasło.');
+                showError('Błędna nazwa użytkownika lub hasło.');
             }
+        }
+
+        // Funkcja rejestracji użytkownika
+        async function register() {
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            const users = await loadUsers();
+            const existingUser = users.find(u => u.username === newUsername);
+
+            if (existingUser) {
+                showError('Nazwa użytkownika jest już zajęta.');
+                return;
+            }
+
+            const newUser = {
+                "username": newUsername,
+                "password": newPassword
+            };
+
+            users.push(newUser);
+            saveUsers(users);
+            alert('Rejestracja zakończona sukcesem!');
+            showLoginForm();
         }
 
         // Funkcja ładująca użytkowników z pliku JSON
         async function loadUsers() {
             const response = await fetch('users.json');
             return await response.json();
+        }
+
+        // Funkcja zapisująca użytkowników do pliku JSON
+        async function saveUsers(users) {
+            await fetch('users.json', {
+                method: 'PUT',
+                body: JSON.stringify(users),
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
         // Funkcja ładująca utwory z pliku JSON
@@ -72,7 +159,7 @@
         // Funkcja wyświetlająca listę utworów
         function displayMusicList(musicData) {
             const musicListElement = document.getElementById('music-list');
-            musicListElement.style.display = 'block';  // Pokaż listę utworów
+            musicListElement.style.display = 'block';
             musicData.forEach(song => {
                 const songElement = document.createElement('div');
                 songElement.classList.add('song');
@@ -87,6 +174,27 @@
             const player = document.getElementById('audio-player');
             player.src = songFile;
             player.play();
+        }
+
+        // Funkcja pokazująca formularz logowania
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registrationForm').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Funkcja pokazująca formularz rejestracji
+        function showRegistrationForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registrationForm').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Funkcja wyświetlająca komunikat o błędzie
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
         }
     </script>
 </body>
