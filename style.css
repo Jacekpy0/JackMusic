@@ -1,18 +1,68 @@
+/* Ogólny styl */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Lista muzyki */
+#music-list-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+}
+
+#music-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.song {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.song button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.song button:hover {
+    background-color: #45a049;
+}
+
+/* Pasek odtwarzacza */
 #audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 300px;
-    margin: auto;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #progress-container {
     width: 100%;
-    height: 10px;
-    background-color: #ddd;
+    height: 8px;
+    background-color: #555;
     cursor: pointer;
-    margin-bottom: 10px;
-    border-radius: 5px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
@@ -23,22 +73,27 @@
     transition: width 0.1s ease;
 }
 
-#audio-time {
-    margin-bottom: 10px;
-    font-size: 14px;
+#audio-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    width: 100%;
 }
 
 button {
-    padding: 10px;
-    font-size: 16px;
-    margin: 5px;
-    background-color: #4caf50;
+    background-color: transparent;
     color: white;
+    font-size: 18px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #45a049;
+    color: #4caf50;
 }
+
+#audio-time {
+    font-size: 14px;
+}
+
